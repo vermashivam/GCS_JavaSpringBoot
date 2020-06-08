@@ -36,5 +36,18 @@ public class FileService {
         //String url = blob.signUrl();
     }
 
+    //list of images
+    public ArrayList<URL> listimages(ArrayList<String> listnames){
+        ArrayList<URL> listUrl  = new ArrayList<>();
+        int durationInMinutes = 5;
+        for(String s : listnames){
+            BlobId blobId = BlobId.of(bucket_name, s);
+            Blob blob = storage.get(blobId);
+            //blob.downloadTo(Paths.get(destFilePath));
+            listUrl.add( blob.signUrl(durationInMinutes, TimeUnit.MINUTES) );//valid for 5 minutes
+            System.out.println("downloaded " + s);
+        }
+        return  listUrl;
+    }
 
 }
