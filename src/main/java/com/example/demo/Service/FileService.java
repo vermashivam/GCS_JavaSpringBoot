@@ -1,11 +1,16 @@
 package com.example.demo.Service;
 
 import com.google.cloud.storage.*;
+import javafx.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class FileService {
@@ -14,40 +19,39 @@ public class FileService {
     private String destFilePath = System.getProperty("user.dir") + "/uploads";
     Storage storage = StorageOptions.newBuilder().setProjectId(projectId).build().getService();
 
-    //upload
-    public String storefile(MultipartFile file) {
-        BlobId blobId = BlobId.of(bucket_name, "my_blob_name");
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("application/octet-stream").build();
-        try { Blob blob = storage.create(blobInfo, file.getBytes() ); }
-        catch (Exception exception){
-            System.out.print("exception : No ");
+    public String storefile(MultipartFile[] file) {
+        for(MultipartFile eachfile : file){
+            try {
+                BlobId blobId = BlobId.of(bucket_name, eachfile.getOriginalFilename());
+                BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("image").build();
+                Blob blob = storage.create(blobInfo, eachfile.getBytes());
+            } catch (Exception exception) {
+                System.out.println("exception : Unsuccesfull " + exception.getMessage());
+            }
+            System.out.println("file " + eachfile.getOriginalFilename() + " store on bucket : " + bucket_name  );
         }
-        System.out.println("file store on bucket : " + bucket_name);
         return "FileUpload";
     }
 
-    //download
-    public String showfile(String filename) {
-        BlobId blobId = BlobId.of(bucket_name, filename);
-        Blob blob = storage.get(blobId);
-        blob.downloadTo(Paths.get(destFilePath));
-        System.out.println("downloaded");
-        return "FileUpload";
-        //String url = blob.signUrl();
-    }
-
-    //list of images
-    public ArrayList<URL> listimages(ArrayList<String> listnames){
-        ArrayList<URL> listUrl  = new ArrayList<>();
-        int durationInMinutes = 5;
-        for(String s : listnames){
-            BlobId blobId = BlobId.of(bucket_name, s);
+    public Model listimages(ArrayList<String> listnames, Model model){
+        HashMap<String,String> fileNameURL = new HashMap<>();
+        for (String filename : listnames) {
+            BlobId blobId = BlobId.of(bucket_name, filename);
             Blob blob = storage.get(blobId);
-            //blob.downloadTo(Paths.get(destFilePath));
-            listUrl.add( blob.signUrl(durationInMinutes, TimeUnit.MINUTES) );//valid for 5 minutes
-            System.out.println("downloaded " + s);
+            try {
+                if (blob.exists()) {
+                    fileNameURL.put(filename, "https://storage.googleapis.com/" + bucket_name + "/" + filename);
+                    System.out.println(filename + " : " + "https://storage.googleapis.com/" + bucket_name + "/" + filename);
+                } else
+                    System.out.println("URL not found for " + filename);
+            }catch (Exception exception){
+                System.out.println("Exception : " + exception.getMessage());
+            }
         }
-        return  listUrl;
+        model.addAllAttributes(fileNameURL);
+        return model;
     }
+
+
 
 }
