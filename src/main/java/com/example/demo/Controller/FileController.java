@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.util.StringUtils;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,16 +39,15 @@ public class FileController {
                             @RequestParam("n4") String n4,@RequestParam("n5") String n5,Model model){
         //System.out.println("in listofimages")
         ArrayList<String> list = new ArrayList<>();
-        String nul = "";
-        if(!n1.equals(nul))
+        if(!StringUtils.isEmpty(n1))
             list.add(n1);
-        if(!n2.equals(nul))
+        if(!StringUtils.isEmpty(n2))
             list.add(n2);
-        if(!n3.equals(nul))
+        if(!StringUtils.isEmpty(n3))
             list.add(n3);
-        if(!n4.equals(nul))
+        if(!StringUtils.isEmpty(n4))
             list.add(n4);
-        if(!n5.equals(nul))
+        if(!StringUtils.isEmpty(n5))
             list.add(n5);
         model = fileService.listimages( list , model);
         return "viewFile";
