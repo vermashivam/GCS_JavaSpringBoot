@@ -1,4 +1,4 @@
-# GCS_JavaSpringBoot
+# Image Bucket
 Spring Boot application uploading  to Google Cloud Storage using Google Cloud Client API and viewing the object given object name and their bucket using publically accessible URL
 
 Get Request : localhost:8080/storeFile
